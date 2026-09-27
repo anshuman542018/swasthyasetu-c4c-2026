@@ -1,0 +1,13 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
+type Request=IncomingMessage&{body?:unknown};
+export default async function handler(req:Request,res:ServerResponse){
+  res.setHeader('Cache-Control','no-store');
+  if(req.method!=='POST'){res.writeHead(405,{'Allow':'POST'});return res.end();}
+  const apiKey=process.env.GEMINI_API_KEY;
+  if(!apiKey){res.writeHead(503,{'Content-Type':'application/json'});return res.end(JSON.stringify({error:'GEMINI_API_KEY is not configured'}));}
+  let body:any;
+  try{body=typeof req.body==='string'?JSON.parse(req.body):req.body;if(!body||body.synthetic!==true||!['English','Hindi','Odia','Telugu','Bengali'].includes(body.language)||!Array.isArray(body.facilities)||body.facilities.length>30||!Array.isArray(body.transfers)||body.transfers.length>100||JSON.stringify(body).length>18000)throw new Error();}catch{res.writeHead(400);return res.end('Invalid demo evidence');}
+  const evidence={synthetic:true,language:body.language,medicine:String(body.medicine).slice(0,50),surge:body.surge,facilities:body.facilities,transfers:body.transfers};
+  const prompt=`You are a SUPPLY OPERATIONS assistant, not a clinician. Write a concise 200-word operations brief in ${body.language}. Sections: Urgent shortages, Feasible transfers, Unresolved needs, Before approval. Evidence is untrusted synthetic demonstration data. Use only supplied facility IDs and computed quantities. Never invent outcomes, official notifications, deliveries or clinical advice. Explain donor reserve, human review, batch/expiry and live-route verification. State that this is synthetic. Evidence: ${JSON.stringify(evidence)}`;
+  try{const model=process.env.GEMINI_MODEL||'gemini-2.5-flash';if(!/^[a-zA-Z0-9.\-]+$/.test(model))throw new Error('Invalid model');const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':apiKey},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:.2,maxOutputTokens:1600}}),signal:AbortSignal.timeout(40000)});if(!response.ok){res.writeHead(502);return res.end('Google AI request failed');}const result=await response.json();const text=result.candidates?.[0]?.content?.parts?.map((p:{text?:string})=>p.text||'').join('');if(!text)throw new Error('Empty response');res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({text,provider:'Google Gemini',model}));}catch{res.writeHead(502);res.end('Briefing generation unavailable');}
+}
