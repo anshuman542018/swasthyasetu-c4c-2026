@@ -24,9 +24,9 @@ for i,s in enumerate(segments):
     d.text((35,774),'Synthetic data | Narrated screenshot walkthrough | Draft: live Gemini segment required',font=small,fill='#b4c7b5')
     frame=work/f'frame-{i:02}.png';out.save(frame)
     audio=root/'audio'/f'segment-{i:02}.wav'
-    with wave.open(str(audio),'rb') as wav: duration=wav.getnframes()/wav.getframerate()+1
+    with wave.open(str(audio),'rb') as wav: duration=wav.getnframes()/wav.getframerate()/1.3+1
     total+=duration
-    subprocess.run([ffmpeg,'-y','-loop','1','-i',str(frame),'-i',str(audio),'-t',str(duration),'-vf','scale=1280:800','-r','15','-c:v','libx264','-tune','stillimage','-preset','fast','-crf','24','-pix_fmt','yuv420p','-c:a','aac','-b:a','96k','-af','apad','-movflags','+faststart',str(work/f'clip-{i:02}.mp4')],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    subprocess.run([ffmpeg,'-y','-loop','1','-i',str(frame),'-i',str(audio),'-t',str(duration),'-vf','scale=1280:800','-r','15','-c:v','libx264','-tune','stillimage','-preset','fast','-crf','24','-pix_fmt','yuv420p','-c:a','aac','-b:a','96k','-af','atempo=1.3,apad','-movflags','+faststart',str(work/f'clip-{i:02}.mp4')],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 (work/'concat.txt').write_text('\n'.join(f"file '{(work/f'clip-{i:02}.mp4').as_posix()}'" for i in range(len(segments))))
 dest=root/'SwasthyaSetu-demo-draft.mp4'
 subprocess.run([ffmpeg,'-y','-f','concat','-safe','0','-i',str(work/'concat.txt'),'-c','copy','-movflags','+faststart',str(dest)],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
