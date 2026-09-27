@@ -44,6 +44,14 @@ Backtest trains on the first 21 days and evaluates the last seven, totaling 84 h
 
 ## Data and privacy
 
+### Verified real public data and feed connections
+
+Open **Public data & feeds**, now the default entry page. It displays eight historical national infrastructure/workforce counts from the Ministry of Health and Family Welfare's September 9, 2024 PIB release, reporting March 31, 2023. Publisher, reference date and source link are shown in the app. These are actual reported counts, not facility-level live stock or occupancy.
+
+The page can fetch current model-based weather context for Bhubaneswar, Visakhapatnam and Kolkata from Open-Meteo, with provider validity times and fetch time. Weather data is CC BY 4.0 with attribution. This feed is separate from medicine demand and cannot establish PHC inventory or emergency alerts.
+
+An authorized operational JSON export can replace the synthetic workspace. The app validates 1-500 facility records, unique IDs, India coordinates, capacities, timestamps and 28 daily consumption counts. Source and reporting date are required. Imported values are labelled user-reported, not independently verified; approvals still simulate stock movements. Download the blank schema at `public/data/operational-schema.json`. No PHC inventory API or live staff feed is currently connected; those need separately authorized access. A Gemini key does not provide those feeds.
+
 `src/data.ts` contains original synthetic stock, consumption, beds and workforce fixtures; approximate coordinates represent eastern India. No patient data, real staff identities or official PHC stock records. Operations persist in localStorage in the current browser. Reset restores the initial fixture. This is a one-user demonstration; there is no real-time multi-user synchronization.
 
 ## Pilot plan

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "synthetic": false,
+  "source": "Replace with the authorized source or system name",
+  "asOf": "",
+  "medicine": "ORS sachets",
+  "facilities": [
+    {
+      "id": "",
+      "name": "",
+      "district": "",
+      "state": "",
+      "lat": null,
+      "lon": null,
+      "stock": null,
+      "beds": null,
+      "occupied": null,
+      "staff": null,
+      "present": null,
+      "history": [],
+      "updated": ""
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {build} from 'vite';
+import {JSDOM} from 'jsdom';
+test('public data view fetches weather and displays provider values without relabelling operational data',async()=>{
+  const result=await build({configFile:'vite.config.ts',build:{write:false,minify:false}});
+  const bundle=(Array.isArray(result)?result[0]:result) as any;
+  const code=bundle.output.find((o:any)=>o.type==='chunk').code;
+  const dom=new JSDOM('<div id="app"></div>',{url:'https://test.invalid/#publicdata',runScripts:'outside-only'});
+  dom.window.scrollTo=()=>{};
+  (dom.window as any).fetch=async()=>({ok:true,json:async()=>[1,2,3].map(()=>({current:{temperature_2m:28,precipitation:1.2,wind_speed_10m:7,time:'2026-09-27T21:00'}}))});
+  dom.window.eval(code);
+  const button=dom.window.document.querySelector<HTMLButtonElement>('#weather-refresh')!;
+  assert.ok(button);
+  button.click();
+  assert.match(dom.window.document.querySelector('#weather-output')!.textContent!,/Contacting/);
+  await new Promise(resolve=>setTimeout(resolve,10));
+  assert.match(dom.window.document.querySelector('#weather-output')!.textContent!,/Bhubaneswar/);
+  assert.match(dom.window.document.querySelector('#weather-output')!.textContent!,/28°C/);
+  assert.match(dom.window.document.body.textContent!,/Synthetic operational data/);
+  dom.window.close();
+});
