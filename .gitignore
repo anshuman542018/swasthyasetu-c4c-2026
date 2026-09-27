@@ -6,3 +6,5 @@ dist/
 !.env.example
 tmp/
 *.log
+submission/audio/
+submission/*.mp4
